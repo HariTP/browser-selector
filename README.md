@@ -4,6 +4,11 @@ A desktop popup for external HTTP/HTTPS links. Choose a browser or a specific
 profile, copy the URL, or close the popup. Links inside browsers keep their
 normal behavior. No browser extensions or background service are needed.
 
+[![Browser Selector demo: open a link, expand a browser, and choose a profile](docs/media/demo.gif)](docs/media/demo.mp4)
+
+[Watch or download the 1080p video](docs/media/demo.mp4) · About 20 seconds. Recorded on
+an isolated Linux desktop with temporary profiles and no personal accounts.
+
 The popup starts with collapsed, clickable browser rows with chevrons. Click a
 browser to reveal only its named profiles; browsers without discoverable profiles
 open directly. An icon beside the URL copies the full link. Keyboard navigation
@@ -154,3 +159,17 @@ Wayland desktop, and HTTP/HTTPS default-handler delivery through `xdg-open`.
 Release builds check bundled GUI startup on Windows and macOS; interactive browser
 routing there still needs testing. Other Linux distributions, Flatpak variants,
 and multiple simultaneous Firefox profiles still need testing.
+
+## Recording the demo
+
+`scripts/record_demo.py` records the actual chooser and browser handoff on a
+temporary X11 desktop, then adds smooth zooms and captions. It requires FFmpeg,
+Xvfb, xdotool, Chrome, Brave, and the Qt X11 dependencies listed above.
+
+```bash
+.venv/bin/python scripts/record_demo.py
+```
+
+The MP4, animated GIF, and poster are written to `docs/media/`. Browser profiles
+and URL-handler configuration are temporary; your desktop is never captured and
+your current default browser is not changed.
