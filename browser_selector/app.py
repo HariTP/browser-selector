@@ -1,0 +1,73 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from .core import choices_for, discover, launch, launch_command, validate_url
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Choose a browser and profile for external links")
+    parser.add_argument("urls", nargs="*")
+    parser.add_argument("--list", action="store_true", help="Print detected browsers and profiles")
+    parser.add_argument("--dry-run", action="store_true", help="Show the planned command instead of opening a browser")
+    options = parser.parse_args()
+    try:
+        urls = [validate_url(u) for u in options.urls]
+    except ValueError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    if options.list:
+        print(json.dumps([{"browser": b.name, "command": b.command, "family": b.family,
+                           "profiles": [{"name": c.name, "path": str(c.root) if c.root else None,
+                                         "profile": c.profile} for c in choices_for(b)]} for b in discover()], indent=2))
+        return 0
+    if sys.platform.startswith("linux") and os.environ.get("WAYLAND_DISPLAY"):
+        os.environ.setdefault("QT_QPA_PLATFORM", "wayland;xcb")
+    from PySide6.QtCore import QEvent
+    from PySide6.QtWidgets import QApplication, QMessageBox
+    from .ui import Chooser
+
+    class Application(QApplication):
+        def __init__(self, args):
+            self.window = None
+            self.pending_urls = []
+            super().__init__(args)
+
+        def event(self, event):
+            if event.type() == QEvent.Type.FileOpen:
+                try:
+                    url = validate_url(event.url().toString())
+                    if self.window is None:
+                        self.pending_urls.append(url)
+                    else:
+                        self.window.add_url(url)
+                except ValueError as exc:
+                    QMessageBox.warning(self.window, "Unsupported link", str(exc))
+                return True
+            return super().event(event)
+
+    def open_choice(choice, urls, window):
+        try:
+            if options.dry_run:
+                print(json.dumps(launch_command(choice, urls)), flush=True)
+            else:
+                launch(choice, urls)
+            window.accept()
+        except (OSError, ValueError, KeyError) as exc:
+            QMessageBox.warning(window, "Could not open link", str(exc))
+
+    app = Application([sys.argv[0]])
+    app.setApplicationName("Browser Selector")
+    app.setOrganizationName("Browser Selector")
+    window = Chooser(app, urls, discover, open_choice)
+    app.window = window
+    for url in app.pending_urls:
+        window.add_url(url)
+    window.show()
+    return app.exec()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

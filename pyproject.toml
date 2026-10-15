@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "browser-selector"
+version = "0.1.0"
+description = "Choose a browser and profile for external web links"
+requires-python = ">=3.10"
+dependencies = ["PySide6>=6.8,<7"]
+
+[project.gui-scripts]
+browser-selector = "browser_selector.app:main"
+
+[tool.setuptools.packages.find]
+include = ["browser_selector*"]
