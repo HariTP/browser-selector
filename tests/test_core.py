@@ -5,10 +5,20 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from browser_selector.core import Browser, Choice, choices_for, desktop_command, discover_linux, launch, launch_command, validate_url
+from browser_selector.core import Browser, Choice, choices_for, desktop_command, discover_linux, host_environment, launch, launch_command, validate_url
 
 
 class CoreTests(unittest.TestCase):
+    def test_frozen_launch_restores_system_library_environment(self):
+        import sys
+        with patch.object(sys, 'frozen', True, create=True), patch.dict(os.environ, {
+            'LD_LIBRARY_PATH': '/bundled/lib', 'LD_LIBRARY_PATH_ORIG': '/host/lib',
+            'QT_PLUGIN_PATH': '/bundled/qt', 'QT_QPA_PLATFORM_PLUGIN_PATH': '/bundled/plugins'}):
+            env = host_environment()
+            self.assertEqual(env['LD_LIBRARY_PATH'], '/host/lib')
+            self.assertNotIn('QT_PLUGIN_PATH', env)
+            self.assertNotIn('QT_QPA_PLATFORM_PLUGIN_PATH', env)
+
     def test_url_validation_preserves_callback(self):
         url = 'https://example.com/callback?token=a%2Fb&next=x#fragment'
         self.assertEqual(validate_url(url), url)

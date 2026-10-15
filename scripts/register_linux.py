@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from browser_selector.core import host_environment
 
 
 def quote(value):
@@ -27,7 +28,7 @@ def main():
         state = json.loads(backup.read_text())
         for mime, desktop in state.items():
             if desktop:
-                subprocess.run(["xdg-mime", "default", desktop, mime], check=True)
+                subprocess.run(["xdg-mime", "default", desktop, mime], check=True, env=host_environment())
             else:
                 # xdg-mime cannot unset: remove our entry from the user overrides.
                 config = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
@@ -45,7 +46,7 @@ def main():
                             cfg.write(output)
         print("Previous HTTP(S) defaults restored. The chooser remains installed.")
         return
-    executable = Path(sys.executable).parent / "browser-selector"
+    executable = Path(sys.executable) if getattr(sys, "frozen", False) else Path(sys.executable).parent / "browser-selector"
     if not executable.is_file():
         raise SystemExit("Install first: .venv/bin/python -m pip install -e .")
     mimes = ["x-scheme-handler/http", "x-scheme-handler/https"]
@@ -54,7 +55,7 @@ def main():
     if args.default:
         state_dir.mkdir(parents=True, exist_ok=True)
         if not backup.exists():
-            state = {mime: subprocess.check_output(["xdg-mime", "query", "default", mime], text=True).strip() for mime in mimes}
+            state = {mime: subprocess.check_output(["xdg-mime", "query", "default", mime], text=True, env=host_environment()).strip() for mime in mimes}
             backup.write_text(json.dumps(state, indent=2))
     app_dir.mkdir(parents=True, exist_ok=True)
     desktop = app_dir / "browser-selector.desktop"
@@ -62,10 +63,10 @@ def main():
                        "Comment=Choose a browser and profile for web links\n"
                        f"Exec={quote(executable)} %U\nIcon=web-browser\nTerminal=false\n"
                        "Categories=Network;WebBrowser;\nMimeType=x-scheme-handler/http;x-scheme-handler/https;\n")
-    subprocess.run(["update-desktop-database", str(app_dir)], check=False)
+    subprocess.run(["update-desktop-database", str(app_dir)], check=False, env=host_environment())
     if args.default:
         for mime in mimes:
-            subprocess.run(["xdg-mime", "default", desktop.name, mime], check=True)
+            subprocess.run(["xdg-mime", "default", desktop.name, mime], check=True, env=host_environment())
     print(f"Installed {desktop}. " + ("HTTP(S) defaults enabled." if args.default else "Use --default to route external links through the chooser."))
 
 

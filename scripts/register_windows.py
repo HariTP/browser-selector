@@ -11,7 +11,7 @@ def set_value(path, name, value):
 
 
 def main():
-    executable = Path(sys.executable).parent / "browser-selector.exe"
+    executable = Path(sys.executable) if getattr(sys, "frozen", False) else Path(sys.executable).parent / "browser-selector.exe"
     if not executable.is_file():
         raise SystemExit("Install first: python -m pip install .")
     command = f'"{executable}" "%1"'

@@ -12,7 +12,61 @@ changes while the popup is open. On Linux it reads the desktop appearance portal
 with native Qt appearance/palette hints as a fallback. New links use the updated
 UI immediately; already-open chooser windows need to be closed and reopened.
 
+Download packaged apps from [GitHub Releases](https://github.com/HariTP/browser-selector/releases).
+The downloads include Python and Qt; no Python installation is needed.
+
+## Windows
+
+Download the `windows-x86_64-setup.exe` installer from Releases and run it. At the
+end of setup, select Browser Selector for HTTP and HTTPS in Windows Default Apps.
+The installer runs per-user without requiring administrator privileges.
+
+For the portable ZIP, extract the entire folder to a permanent location and run
+`browser-selector.exe --setup` to register it and open Default Apps. Keep its
+`_internal` folder beside the executable. Windows downloads are currently unsigned.
+
+To install from source instead:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install .
+.venv\Scripts\python scripts\register_windows.py
+```
+
+## macOS
+
+Download the `macos-arm64.dmg` for Apple Silicon or `macos-x86_64.dmg` for Intel.
+Drag Browser Selector into Applications, launch it, and select it as the default
+web browser in System Settings. The first releases use ad-hoc signing rather
+than Developer ID signing/notarization, so macOS may warn or block the app.
+
+To build from source instead:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install . pyinstaller
+.venv/bin/python scripts/build_release.py
+```
+
+Safari is supported as a browser choice; selecting a specific Safari profile is
+not available.
+
 ## Linux
+
+For Ubuntu 22.04+/Debian 12+, download the `.deb` from Releases and install it
+through your software installer or `sudo apt install ./browser-selector-*.deb`.
+Then select Browser Selector as the default web browser in desktop Settings.
+
+For the portable `.tar.gz`, extract the entire folder to a permanent location and
+run `./browser-selector --setup --make-default` inside it. Keep the `_internal`
+folder beside the executable. Portable builds still need system desktop libraries;
+the `.deb` declares those dependencies for your package manager.
+
+If you previously installed this checkout as the default handler, run the packaged
+`browser-selector --setup --make-default` to replace the old launcher path.
+Use `browser-selector --setup --restore-defaults` to restore saved HTTP(S) defaults.
+
+To install from source instead:
 
 ```bash
 python3 -m venv .venv
@@ -60,34 +114,19 @@ as process arguments, without invoking a shell, and are neither logged nor sent
 to a service. Missing executables and immediate browser errors keep the picker
 open; a browser's later internal error may require retrying the link.
 
-## Windows (implemented, unverified)
-
-```powershell
-python -m venv .venv
-.venv\Scripts\python -m pip install .
-.venv\Scripts\python scripts\register_windows.py
-```
-
-Select Browser Selector for HTTP and HTTPS in the Settings page that opens.
-Discovery uses current-user and machine browser registrations. No protected
-default-association registry values are changed. Keep the virtual environment in
-place. Windows builds and runtime behavior have not been tested here.
-
-## macOS (implemented, unverified)
+## Building releases
 
 ```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install . pyinstaller
-.venv/bin/python scripts/build_macos.py
+python -m pip install . 'pyinstaller>=6.10,<7'
+python scripts/build_release.py
 ```
 
-Move `dist/Browser Selector.app` into `/Applications`, launch it, then choose it as
-the default web browser in System Settings. The bundle receives URL Apple events
-through Qt. Discovery scans `/Applications`, `~/Applications`, and system apps.
-Profile-specific launches invoke the browser executable so its own instance
-routing can handle an already-running browser. Safari profile selection is not
-implemented. Packaging, Apple-event delivery, and runtime behavior are unverified.
-Public distribution requires developer signing and notarization.
+Run the build on the OS/CPU you are targeting. Artifacts and SHA-256 checksums go
+into `release/`. Windows builds require Inno Setup 6; Linux `.deb` builds require
+`dpkg-deb`. GitHub Actions builds all supported platforms when a matching `v*` tag
+is pushed, checks that each bundled app can construct its GUI, and attaches the
+packages to a prerelease. A manual workflow run builds downloadable Actions
+artifacts without publishing a release.
 
 ## Verification
 

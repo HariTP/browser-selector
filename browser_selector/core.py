@@ -294,10 +294,24 @@ def launch_command(choice: Choice, urls: list[str], platform: str = sys.platform
     return cmd + args + urls
 
 
+def host_environment() -> dict[str, str]:
+    """Keep bundled Qt/library paths out of browsers and desktop utilities."""
+    env = dict(os.environ)
+    if getattr(sys, "frozen", False):
+        if sys.platform.startswith("linux"):
+            if "LD_LIBRARY_PATH_ORIG" in env:
+                env["LD_LIBRARY_PATH"] = env["LD_LIBRARY_PATH_ORIG"]
+            else:
+                env.pop("LD_LIBRARY_PATH", None)
+        for key in ("QT_PLUGIN_PATH", "QT_QPA_PLATFORM_PLUGIN_PATH", "QML2_IMPORT_PATH"):
+            env.pop(key, None)
+    return env
+
+
 def launch(choice: Choice, urls: list[str]) -> subprocess.Popen:
     process = subprocess.Popen(launch_command(choice, urls), stdin=subprocess.DEVNULL,
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                               start_new_session=sys.platform != "win32")
+                               start_new_session=sys.platform != "win32", env=host_environment())
     try:
         code = process.wait(timeout=.2)
         if code != 0:
