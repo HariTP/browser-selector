@@ -13,7 +13,7 @@ def main() -> int:
     parser.add_argument("urls", nargs="*")
     parser.add_argument("--list", action="store_true", help="Print detected browsers and profiles")
     parser.add_argument("--dry-run", action="store_true", help="Show the planned command instead of opening a browser")
-    parser.add_argument("--version", action="version", version="Browser Selector 0.1.0")
+    parser.add_argument("--version", action="version", version="Browser Selector 0.1.1")
     parser.add_argument("--setup", action="store_true", help="Register this installation as an available browser")
     parser.add_argument("--make-default", action="store_true", help="With --setup, enable HTTP(S) defaults on Linux")
     parser.add_argument("--restore-defaults", action="store_true", help="With --setup, restore previous Linux defaults")

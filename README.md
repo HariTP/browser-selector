@@ -151,5 +151,6 @@ display:
 Verified on the development Linux machine: real Chrome and Brave profile routing
 on X11, cold/warm Snap Firefox routing on Wayland, chooser rendering on the actual
 Wayland desktop, and HTTP/HTTPS default-handler delivery through `xdg-open`.
-Windows/macOS implementation is not runtime-verified. Other Linux distributions,
-Flatpak variants, and multiple simultaneous Firefox profiles still need testing.
+Release builds check bundled GUI startup on Windows and macOS; interactive browser
+routing there still needs testing. Other Linux distributions, Flatpak variants,
+and multiple simultaneous Firefox profiles still need testing.

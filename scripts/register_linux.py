@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 from browser_selector.core import host_environment
 
@@ -63,7 +64,8 @@ def main():
                        "Comment=Choose a browser and profile for web links\n"
                        f"Exec={quote(executable)} %U\nIcon=web-browser\nTerminal=false\n"
                        "Categories=Network;WebBrowser;\nMimeType=x-scheme-handler/http;x-scheme-handler/https;\n")
-    subprocess.run(["update-desktop-database", str(app_dir)], check=False, env=host_environment())
+    if shutil.which("update-desktop-database"):
+        subprocess.run(["update-desktop-database", str(app_dir)], check=False, env=host_environment())
     if args.default:
         for mime in mimes:
             subprocess.run(["xdg-mime", "default", desktop.name, mime], check=True, env=host_environment())
