@@ -1,0 +1,16 @@
+.git/
+.github/
+.venv/
+.playwright-cli/
+browser_selector/
+browser_selector.egg-info/
+build/
+dist/
+release/
+packaging/
+scripts/
+tests/
+output/
+__pycache__/
+docs/media/demo.gif
+website/dist/

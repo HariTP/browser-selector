@@ -7,3 +7,7 @@ dist/
 core
 release/
 *.spec
+.vercel/
+.playwright-cli/
+output/
+.vercel
